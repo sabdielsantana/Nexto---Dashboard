@@ -1,0 +1,106 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* Modo claro (toggle). El oscuro es el default — ver ThemeProvider. */
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 224 20% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 224 20% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 20% 12%;
+
+    --primary: 262 83% 58%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 224 20% 12%;
+
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 42%;
+
+    --accent: 220 14% 94%;
+    --accent-foreground: 224 20% 12%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 13% 88%;
+    --input: 220 13% 88%;
+    --ring: 262 83% 58%;
+
+    --positive: 142 71% 40%;
+    --negative: 0 72% 51%;
+    --warning: 25 95% 48%;
+    --info: 217 91% 55%;
+    --accent-alt: 271 81% 56%;
+
+    --radius: 0.75rem;
+  }
+
+  /* Modo oscuro: paleta vibrante sobre fondo oscuro */
+  .dark {
+    --background: 225 24% 7%;
+    --foreground: 210 20% 96%;
+
+    --card: 225 22% 11%;
+    --card-foreground: 210 20% 96%;
+
+    --popover: 225 22% 11%;
+    --popover-foreground: 210 20% 96%;
+
+    --primary: 263 90% 66%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 225 18% 17%;
+    --secondary-foreground: 210 20% 96%;
+
+    --muted: 225 18% 17%;
+    --muted-foreground: 218 12% 65%;
+
+    --accent: 225 18% 20%;
+    --accent-foreground: 210 20% 96%;
+
+    --destructive: 0 84% 62%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 225 16% 20%;
+    --input: 225 16% 22%;
+    --ring: 263 90% 66%;
+
+    --positive: 142 71% 48%;
+    --negative: 0 84% 62%;
+    --warning: 27 96% 56%;
+    --info: 213 94% 62%;
+    --accent-alt: 271 91% 68%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family:
+      ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+      "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji",
+      "Segoe UI Emoji";
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  /* Los montos se leen mejor con cifras tabulares */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+}
