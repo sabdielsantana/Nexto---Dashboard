@@ -156,3 +156,107 @@ Adapted as an AI skill by:
 - **Jordan Gilliam** ([@nolansym](https://x.com/nolansym))
 
 Based on the [components.build](https://components.build) specification.
+
+---
+
+# Anexo del proyecto — Convención plana (Nexto)
+
+> Esta sección la añade **este proyecto**. Todo lo anterior es el spec original
+> de components.build, sin tocar. Cuando ambos se contradigan, **manda esta
+> sección**, porque describe el código que ya existe en `components/ui/`.
+
+## Regla
+
+Todo componente que traigamos de cult-ui (o de cualquier registro externo) se
+**aplana** a la convención de `components/ui/` antes de darlo por instalado.
+No se consume tal cual viene.
+
+### 1. Exports con nombre, nunca `export default`
+
+```tsx
+// ✅
+export { NeumorphButton, neumorphButtonVariants };
+export interface NeumorphButtonProps { … }
+
+// ❌ como suele venir del registro
+export default NeumorphButton;
+```
+
+### 2. Sin patrón namespace
+
+Los subcomponentes se exportan planos, no colgados de un objeto. Esto
+contradice `composition-export` y los ejemplos `Accordion.Root` de
+`rules/composition.md`; aquí gana lo plano.
+
+```tsx
+// ✅ lo que ya hacen dialog.tsx, select.tsx, table.tsx…
+export { Dialog, DialogTrigger, DialogContent, DialogTitle };
+
+// ❌
+export const Dialog = { Root, Trigger, Content };
+```
+
+### 3. Sin polimorfismo `as`
+
+Nada de `<Button as="a">` ni genéricos polimórficos. Contradice
+`rules/polymorphism.md` a propósito: complica los tipos y no lo necesitamos.
+Si hace falta otro elemento, se compone (ver punto 4).
+
+### 4. `asChild`: no se añade, pero no se arranca
+
+Matiz importante, porque es fácil leer "convención plana" como "prohibido
+`asChild`" y romper código que funciona:
+
+- **No se lo añadimos** a los componentes que importemos de cult-ui. Llegan sin
+  él y así se quedan.
+- **Se mantiene donde ya está y se gana el sitio**, que hoy es:
+  - `components/ui/button.tsx` — permite `<Button asChild><Link …></Button>`,
+    que renderiza un `<a>` de verdad. Quitarlo rompería 7 usos y degradaría la
+    accesibilidad (navegación por teclado, abrir en pestaña nueva).
+  - Los `*Trigger` de Radix (`DialogTrigger`, `PopoverTrigger`,
+    `DropdownMenuTrigger`, `AlertDialogTrigger`) — es el mecanismo de
+    composición de Radix, no una elección de estilo nuestra. Unos 10 usos.
+
+O sea: la regla es *no introducir* `asChild` nuevo, no erradicarlo.
+
+### 5. Forma del componente
+
+- `React.forwardRef` + `displayName`, no `React.FC`.
+- Las clases pasan por `cn()` para que el `className` del consumidor gane los
+  conflictos vía tailwind-merge (esto sí coincide con el spec).
+- Los tipos de props se exportan y extienden los atributos nativos del
+  elemento.
+
+### 6. Colores por token, nunca hex fijo
+
+Los componentes de registro suelen traer hex incrustados y por eso no
+reaccionan al toggle claro/oscuro. Se reescriben contra los tokens del
+proyecto (`--primary`, `--info`, `--positive`, `--negative`, `--warning`,
+`--accent-alt`).
+
+Para componer opacidad se usa `hsl(var(--token) / X)`, el mismo patrón que
+`components/calendar/heatmap-calendar.tsx`. Los tokens se guardan como
+tripletes HSL sin envolver justamente para permitirlo.
+
+> Cuidado con Tailwind: las clases tienen que quedar **literales** en el
+> código. Tailwind escanea el fuente como texto plano, así que una clase
+> construida con plantillas (`` `shadow-[…${tinte}]` ``) no se genera nunca y
+> el componente sale sin estilo, sin error en ningún sitio.
+
+## Checklist al importar un componente
+
+1. `export default` → export con nombre.
+2. `React.FC` → `forwardRef` + `displayName`.
+3. Hex fijos → tokens del proyecto.
+4. Clases por `cn()`.
+5. Sin `as` ni `asChild` nuevos; sin namespace.
+6. `tsc --noEmit`, `next lint` y `next build`.
+7. Si toca color, comprobar los dos temas de verdad, no solo que compile.
+
+## Pendiente conocido
+
+El texto blanco sobre `positive` y `warning` no llega al contraste WCAG AA
+(2.02 y 2.49 en oscuro; el mínimo para texto grande es 3.0). Afecta tanto a
+`neumorph-button.tsx` como a `button.tsx`, que ya usaba `bg-positive
+text-white` desde antes. Se arregla en los dos a la vez o en ninguno, para no
+dejar dos criterios distintos conviviendo.
