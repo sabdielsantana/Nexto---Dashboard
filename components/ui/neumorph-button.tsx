@@ -1,113 +1,126 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
-import { Loader2 } from "lucide-react"
-import { motion, type HTMLMotionProps } from "motion/react"
+import * as React from "react";
 
-const buttonVariants = cva(
-  // Base styles
-  "justify-center px-4 text-sm font-medium items-center transition-[box-shadow,background-color] disabled:cursor-not-allowed disabled:opacity-50 flex active:transition-none",
+import { type VariantProps, cva } from "class-variance-authority";
+import { Loader2 } from "lucide-react";
+import { type HTMLMotionProps, motion } from "motion/react";
+
+import { cn } from "@/lib/utils";
+
+/*
+ * Botón neumórfico de cult-ui, adaptado al sistema de diseño del proyecto.
+ *
+ * El original traía los colores en hex fijos (#36322F, #2C7BE5, …), así que no
+ * reaccionaba al toggle claro/oscuro. Aquí cada intención se ata a un token
+ * semántico y el relieve se compone con opacidad sobre ese mismo token —
+ * `hsl(var(--token) / X)`, el mismo patrón que la rampa del heatmap.
+ *
+ * El relieve vive en las clases base y se tiñe con `--nb-accent`, que cada
+ * intención declara. Dos motivos:
+ *   1. Las clases quedan literales. Tailwind escanea el código como texto
+ *      plano, así que una clase construida con plantillas (`shadow-[...${x}]`)
+ *      nunca se generaría y el botón saldría sin relieve.
+ *   2. El relieve queda definido en un solo sitio en vez de repetirse por
+ *      intención.
+ *
+ * `secondary` sí sobrescribe las sombras: al no tener tinte, un halo de color
+ * no le aporta. cn() (tailwind-merge) resuelve el conflicto a favor de la
+ * variante porque llega después que la base.
+ */
+const neumorphButtonVariants = cva(
+  [
+    "inline-flex items-center justify-center gap-2 font-medium",
+    "transition-[box-shadow,background-color] active:transition-none",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+    "focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+    "disabled:cursor-not-allowed disabled:opacity-50",
+    "disabled:bg-muted disabled:text-muted-foreground",
+    "[&_svg]:shrink-0",
+    // Relieve: borde inferior hundido (negro translúcido, sirve en ambos
+    // temas) + halo exterior teñido con la intención.
+    "shadow-[inset_0_-2.1px_0_0_hsl(0_0%_0%/0.30),0_1.2px_6.3px_0_hsl(var(--nb-accent)/0.45)]",
+    "hover:enabled:shadow-[inset_0_-2.5px_0_0_hsl(0_0%_0%/0.34),0_1.45px_7.6px_0_hsl(var(--nb-accent)/0.55)]",
+    "active:shadow-[inset_0_-1.5px_0_0_hsl(0_0%_0%/0.36),0_0.5px_2px_0_hsl(var(--nb-accent)/0.6)]",
+    "disabled:shadow-none",
+  ].join(" "),
   {
     variants: {
       intent: {
-        default: [
-          "bg-[#36322F]",
-          "text-[#fff]",
-          "hover:enabled:bg-[#4a4542]",
-          "disabled:bg-[#8c8885]",
-          "[box-shadow:inset_0px_-2.108433723449707px_0px_0px_#171310,_0px_1.2048193216323853px_6.325301647186279px_0px_rgba(58,_33,_8,_58%)]",
-          "hover:enabled:[box-shadow:inset_0px_-2.53012px_0px_0px_#171310,_0px_1.44578px_7.59036px_0px_rgba(58,_33,_8,_64%)]",
-          "disabled:shadow-none",
-          "active:bg-[#2A2724]",
-          "active:[box-shadow:inset_0px_-1.5px_0px_0px_#171310,_0px_0.5px_2px_0px_rgba(58,_33,_8,_70%)]",
-        ],
-        primary: [
-          "bg-[#2C7BE5]",
-          "text-[#fff]",
-          "hover:enabled:bg-[#3D8DF5]",
-          "disabled:bg-[#9FC3F5]",
-          "[box-shadow:inset_0px_-2.108433723449707px_0px_0px_#1A68D1,_0px_1.2048193216323853px_6.325301647186279px_0px_rgba(28,_100,_242,_58%)]",
-          "hover:enabled:[box-shadow:inset_0px_-2.53012px_0px_0px_#2C7BE5,_0px_1.44578px_7.59036px_0px_rgba(28,_100,_242,_64%)]",
-          "disabled:shadow-none",
-          "active:bg-[#1A68D1]",
-          "active:[box-shadow:inset_0px_-1.5px_0px_0px_#1554AB,_0px_0.5px_2px_0px_rgba(28,_100,_242,_70%)]",
-        ],
+        /** Acento principal de la app (púrpura). */
+        default:
+          "bg-primary text-primary-foreground hover:enabled:bg-primary/90 active:bg-primary/80 [--nb-accent:var(--primary)]",
+        /** Azul = información / neutral. */
+        info: "bg-info text-white hover:enabled:bg-info/90 active:bg-info/80 [--nb-accent:var(--info)]",
+        /** Verde = superávit / confirmación. */
+        positive:
+          "bg-positive text-white hover:enabled:bg-positive/90 active:bg-positive/80 [--nb-accent:var(--positive)]",
+        /** Rojo = déficit / acción destructiva. */
+        negative:
+          "bg-negative text-white hover:enabled:bg-negative/90 active:bg-negative/80 [--nb-accent:var(--negative)]",
+        /** Naranja = alerta / pendiente. */
+        warning:
+          "bg-warning text-white hover:enabled:bg-warning/90 active:bg-warning/80 [--nb-accent:var(--warning)]",
+        /** Superficie neutra, sin halo de color. */
         secondary: [
-          "bg-[#FFFFFF]",
-          "text-[#36322F]",
-          "hover:enabled:bg-[#F8F8F8]",
-          "disabled:bg-[#F0F0F0]",
-          "[box-shadow:inset_0px_-2.108433723449707px_0px_0px_#E0E0E0,_0px_1.2048193216323853px_6.325301647186279px_0px_rgba(0,_0,_0,_10%)]",
-          "hover:enabled:[box-shadow:inset_0px_-2.53012px_0px_0px_#E8E8E8,_0px_1.44578px_7.59036px_0px_rgba(0,_0,_0,_12%)]",
-          "disabled:shadow-none",
-          "border",
-          "border-[#E0E0E0]",
-          "active:bg-[#F0F0F0]",
-          "active:[box-shadow:inset_0px_-1.5px_0px_0px_#D8D8D8,_0px_0.5px_2px_0px_rgba(0,_0,_0,_15%)]",
-        ],
-        danger: [
-          "bg-[#E6492D]",
-          "text-[#fff]",
-          "hover:enabled:bg-[#F05B41]",
-          "disabled:bg-[#F5A799]",
-          "[box-shadow:inset_0px_-2.108433723449707px_0px_0px_#D63A1F,_0px_1.2048193216323853px_6.325301647186279px_0px_rgba(214,_58,_31,_58%)]",
-          "hover:enabled:[box-shadow:inset_0px_-2.53012px_0px_0px_#E6492D,_0px_1.44578px_7.59036px_0px_rgba(214,_58,_31,_64%)]",
-          "disabled:shadow-none",
-          "active:bg-[#D63A1F]",
-          "active:[box-shadow:inset_0px_-1.5px_0px_0px_#B22E17,_0px_0.5px_2px_0px_rgba(214,_58,_31,_70%)]",
-        ],
+          "border border-border bg-card text-card-foreground",
+          "hover:enabled:bg-accent active:bg-accent",
+          "shadow-[inset_0_-2.1px_0_0_hsl(0_0%_0%/0.14),0_1.2px_5px_0_hsl(0_0%_0%/0.10)]",
+          "hover:enabled:shadow-[inset_0_-2.5px_0_0_hsl(0_0%_0%/0.16),0_1.45px_6px_0_hsl(0_0%_0%/0.12)]",
+          "active:shadow-[inset_0_-1.5px_0_0_hsl(0_0%_0%/0.18),0_0.5px_2px_0_hsl(0_0%_0%/0.14)]",
+        ].join(" "),
       },
       size: {
-        small: ["text-xs", "py-1", "px-2", "h-9", "rounded-[8px]"],
-        medium: ["text-base", "py-2", "px-4", "h-11", "rounded-[9px]"],
-        large: ["text-lg", "py-3", "px-6", "h-14", "rounded-[11px]"],
+        small: "h-9 rounded-[8px] px-2 py-1 text-xs [&_svg]:size-3.5",
+        medium: "h-11 rounded-[9px] px-4 py-2 text-base [&_svg]:size-4",
+        large: "h-14 rounded-[11px] px-6 py-3 text-lg [&_svg]:size-5",
       },
       fullWidth: {
         true: "w-full",
       },
     },
-    compoundVariants: [
-      {
-        intent: ["default", "primary", "secondary", "danger"],
-        size: "medium",
-        className: "uppercase",
-      },
-    ],
     defaultVariants: {
       intent: "default",
       size: "medium",
     },
-  }
-)
+  },
+);
 
 export interface NeumorphButtonProps
   extends HTMLMotionProps<"button">,
-    VariantProps<typeof buttonVariants> {
-  children: React.ReactNode
-  loading?: boolean
+    VariantProps<typeof neumorphButtonVariants> {
+  children: React.ReactNode;
+  loading?: boolean;
 }
 
-const NeumorphButton: React.FC<NeumorphButtonProps> = ({
-  className,
-  intent,
-  size,
-  fullWidth,
-  children,
-  loading = false,
-  disabled,
-  ...props
-}) => {
-  return (
+const NeumorphButton = React.forwardRef<HTMLButtonElement, NeumorphButtonProps>(
+  (
+    {
+      className,
+      intent,
+      size,
+      fullWidth,
+      children,
+      loading = false,
+      disabled,
+      ...props
+    },
+    ref,
+  ) => (
     <motion.button
-      className={buttonVariants({ intent, size, fullWidth, className })}
+      ref={ref}
+      className={cn(
+        neumorphButtonVariants({ intent, size, fullWidth }),
+        className,
+      )}
       disabled={disabled || loading}
+      aria-busy={loading || undefined}
       whileTap={{ scale: 0.98 }}
       whileHover={{ scale: 1.02 }}
       transition={{ type: "spring", stiffness: 400, damping: 10 }}
       {...props}
     >
-      {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+      {loading ? <Loader2 className="animate-spin" /> : null}
       <motion.span
         initial={{ opacity: 1 }}
         animate={{ opacity: loading ? 0.7 : 1 }}
@@ -116,7 +129,8 @@ const NeumorphButton: React.FC<NeumorphButtonProps> = ({
         {children}
       </motion.span>
     </motion.button>
-  )
-}
+  ),
+);
+NeumorphButton.displayName = "NeumorphButton";
 
-export default NeumorphButton
+export { NeumorphButton, neumorphButtonVariants };
