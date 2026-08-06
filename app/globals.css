@@ -1,89 +1,145 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@import "tw-animate-css";
 
-@layer base {
-  /* Modo claro (toggle). El oscuro es el default — ver ThemeProvider. */
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 224 20% 12%;
+/* next-themes escribe class="dark" en <html>. */
+@custom-variant dark (&:is(.dark *));
 
-    --card: 0 0% 100%;
-    --card-foreground: 224 20% 12%;
+/*
+ * Los tokens se guardan como tripletes HSL sin envolver ("225 24% 7%") en
+ * lugar de colores completos. Es intencional: varios componentes componen
+ * opacidad sobre ellos en línea — p.ej. `hsl(var(--positive) / 0.55)` en la
+ * rampa del heatmap y en chart-theme.ts. Guardarlos ya envueltos en hsl()
+ * rompería esas expresiones.
+ *
+ * @theme inline se encarga de envolverlos para que Tailwind genere las
+ * utilidades (bg-positive, text-muted-foreground, …).
+ */
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 224 20% 12%;
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
 
-    --primary: 262 83% 58%;
-    --primary-foreground: 0 0% 100%;
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
 
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 224 20% 12%;
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
 
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 9% 42%;
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
 
-    --accent: 220 14% 94%;
-    --accent-foreground: 224 20% 12%;
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
 
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 100%;
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
 
-    --border: 220 13% 88%;
-    --input: 220 13% 88%;
-    --ring: 262 83% 58%;
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
 
-    --positive: 142 71% 40%;
-    --negative: 0 72% 51%;
-    --warning: 25 95% 48%;
-    --info: 217 91% 55%;
-    --accent-alt: 271 81% 56%;
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
 
-    --radius: 0.75rem;
-  }
+  /* Paleta semántica del sistema de diseño */
+  --color-positive: hsl(var(--positive));
+  --color-negative: hsl(var(--negative));
+  --color-warning: hsl(var(--warning));
+  --color-info: hsl(var(--info));
+  --color-accentAlt: hsl(var(--accent-alt));
 
-  /* Modo oscuro: paleta vibrante sobre fondo oscuro */
-  .dark {
-    --background: 225 24% 7%;
-    --foreground: 210 20% 96%;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+}
 
-    --card: 225 22% 11%;
-    --card-foreground: 210 20% 96%;
+/* Modo claro (toggle). El oscuro es el default — ver ThemeProvider. */
+:root {
+  --background: 0 0% 100%;
+  --foreground: 224 20% 12%;
 
-    --popover: 225 22% 11%;
-    --popover-foreground: 210 20% 96%;
+  --card: 0 0% 100%;
+  --card-foreground: 224 20% 12%;
 
-    --primary: 263 90% 66%;
-    --primary-foreground: 0 0% 100%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 224 20% 12%;
 
-    --secondary: 225 18% 17%;
-    --secondary-foreground: 210 20% 96%;
+  --primary: 262 83% 58%;
+  --primary-foreground: 0 0% 100%;
 
-    --muted: 225 18% 17%;
-    --muted-foreground: 218 12% 65%;
+  --secondary: 220 14% 96%;
+  --secondary-foreground: 224 20% 12%;
 
-    --accent: 225 18% 20%;
-    --accent-foreground: 210 20% 96%;
+  --muted: 220 14% 96%;
+  --muted-foreground: 220 9% 42%;
 
-    --destructive: 0 84% 62%;
-    --destructive-foreground: 0 0% 100%;
+  --accent: 220 14% 94%;
+  --accent-foreground: 224 20% 12%;
 
-    --border: 225 16% 20%;
-    --input: 225 16% 22%;
-    --ring: 263 90% 66%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
 
-    --positive: 142 71% 48%;
-    --negative: 0 84% 62%;
-    --warning: 27 96% 56%;
-    --info: 213 94% 62%;
-    --accent-alt: 271 91% 68%;
-  }
+  --border: 220 13% 88%;
+  --input: 220 13% 88%;
+  --ring: 262 83% 58%;
+
+  --positive: 142 71% 40%;
+  --negative: 0 72% 51%;
+  --warning: 25 95% 48%;
+  --info: 217 91% 55%;
+  --accent-alt: 271 81% 56%;
+
+  --radius: 0.75rem;
+}
+
+/* Modo oscuro: paleta vibrante sobre fondo oscuro */
+.dark {
+  --background: 225 24% 7%;
+  --foreground: 210 20% 96%;
+
+  --card: 225 22% 11%;
+  --card-foreground: 210 20% 96%;
+
+  --popover: 225 22% 11%;
+  --popover-foreground: 210 20% 96%;
+
+  --primary: 263 90% 66%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 225 18% 17%;
+  --secondary-foreground: 210 20% 96%;
+
+  --muted: 225 18% 17%;
+  --muted-foreground: 218 12% 65%;
+
+  --accent: 225 18% 20%;
+  --accent-foreground: 210 20% 96%;
+
+  --destructive: 0 84% 62%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 225 16% 20%;
+  --input: 225 16% 22%;
+  --ring: 263 90% 66%;
+
+  --positive: 142 71% 48%;
+  --negative: 0 84% 62%;
+  --warning: 27 96% 56%;
+  --info: 213 94% 62%;
+  --accent-alt: 271 91% 68%;
 }
 
 @layer base {
+  /*
+   * v4 cambia el color de borde por defecto a currentColor; sin esto los
+   * bordes heredarían el color del texto.
+   */
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
     font-family:
@@ -92,15 +148,14 @@
       "Segoe UI Emoji";
     font-feature-settings: "rlig" 1, "calt" 1;
   }
+
   /* Los montos se leen mejor con cifras tabulares */
   .tabular {
     font-variant-numeric: tabular-nums;
   }
 }
 
-@layer utilities {
-  .scrollbar-thin {
-    scrollbar-width: thin;
-    scrollbar-color: hsl(var(--border)) transparent;
-  }
+@utility scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--border)) transparent;
 }
