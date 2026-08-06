@@ -50,6 +50,9 @@
   --color-info: hsl(var(--info));
   --color-accentAlt: hsl(var(--accent-alt));
 
+  /* Tinta para rellenos claros — ver --on-bright. */
+  --color-on-bright: hsl(var(--on-bright));
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -90,6 +93,17 @@
   --warning: 25 95% 48%;
   --info: 217 91% 55%;
   --accent-alt: 271 81% 56%;
+
+  /*
+   * Tinta sobre rellenos claros y saturados (verde y naranja).
+   *
+   * A propósito NO se redefine en .dark: es tinta sobre un relleno de color,
+   * no sobre el fondo de la página, así que no debe seguir al tema. El blanco
+   * sobre --positive daba 2.02:1 en oscuro y 2.90:1 en claro — por debajo
+   * incluso del mínimo de 3:1 para texto grande. Con este valor todas las
+   * combinaciones superan el 4.5:1 de WCAG AA.
+   */
+  --on-bright: 224 20% 12%;
 
   --radius: 0.75rem;
 }

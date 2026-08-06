@@ -18,7 +18,9 @@ const buttonVariants = cva(
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
-        positive: "bg-positive text-white hover:bg-positive/90",
+        // Tinta oscura, no blanca: el blanco sobre --positive no llega ni al
+        // 3:1 de texto grande. Ver --on-bright en globals.css.
+        positive: "bg-positive text-on-bright hover:bg-positive/90",
       },
       size: {
         default: "h-10 px-4 py-2",

@@ -52,15 +52,18 @@ const neumorphButtonVariants = cva(
           "bg-primary text-primary-foreground hover:enabled:bg-primary/90 active:bg-primary/80 [--nb-accent:var(--primary)]",
         /** Azul = información / neutral. */
         info: "bg-info text-white hover:enabled:bg-info/90 active:bg-info/80 [--nb-accent:var(--info)]",
-        /** Verde = superávit / confirmación. */
+        /**
+         * Verde = superávit / confirmación. Lleva tinta oscura: el blanco
+         * sobre este verde no alcanza el contraste mínimo (ver --on-bright).
+         */
         positive:
-          "bg-positive text-white hover:enabled:bg-positive/90 active:bg-positive/80 [--nb-accent:var(--positive)]",
+          "bg-positive text-on-bright hover:enabled:bg-positive/90 active:bg-positive/80 [--nb-accent:var(--positive)]",
         /** Rojo = déficit / acción destructiva. */
         negative:
           "bg-negative text-white hover:enabled:bg-negative/90 active:bg-negative/80 [--nb-accent:var(--negative)]",
-        /** Naranja = alerta / pendiente. */
+        /** Naranja = alerta / pendiente. Misma razón que positive. */
         warning:
-          "bg-warning text-white hover:enabled:bg-warning/90 active:bg-warning/80 [--nb-accent:var(--warning)]",
+          "bg-warning text-on-bright hover:enabled:bg-warning/90 active:bg-warning/80 [--nb-accent:var(--warning)]",
         /** Superficie neutra, sin halo de color. */
         secondary: [
           "border border-border bg-card text-card-foreground",

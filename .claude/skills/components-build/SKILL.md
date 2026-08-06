@@ -253,10 +253,17 @@ tripletes HSL sin envolver justamente para permitirlo.
 6. `tsc --noEmit`, `next lint` y `next build`.
 7. Si toca color, comprobar los dos temas de verdad, no solo que compile.
 
-## Pendiente conocido
+## Tinta sobre rellenos claros: `--on-bright`
 
-El texto blanco sobre `positive` y `warning` no llega al contraste WCAG AA
-(2.02 y 2.49 en oscuro; el mínimo para texto grande es 3.0). Afecta tanto a
-`neumorph-button.tsx` como a `button.tsx`, que ya usaba `bg-positive
-text-white` desde antes. Se arregla en los dos a la vez o en ninguno, para no
-dejar dos criterios distintos conviviendo.
+Sobre `positive` y `warning` va `text-on-bright`, no `text-white`. El blanco
+sobre esos verdes y naranjas se quedaba en 2.02:1 y 2.49:1 en oscuro, por
+debajo incluso del 3:1 de texto grande; con `--on-bright` todas las
+combinaciones pasan de 4.5:1.
+
+`--on-bright` **no se redefine en `.dark`** a propósito: es tinta sobre un
+relleno de color, no sobre el fondo de la página, así que no debe seguir al
+tema.
+
+Al traer un componente con rellenos saturados, comprobar el contraste midiendo
+el color computado en el navegador, no a ojo. `negative`, `info` y `default`
+sí funcionan con blanco y se quedan como están.
