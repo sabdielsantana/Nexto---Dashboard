@@ -2,6 +2,7 @@
 
 import { Check } from "lucide-react";
 
+import { readableInkOn } from "@/lib/color";
 import { CATEGORY_COLORS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
@@ -28,7 +29,18 @@ export function ColorPicker({ value, onChange }: ColorPickerProps) {
             )}
             style={{ backgroundColor: color }}
           >
-            {selected ? <Check className="h-3.5 w-3.5 text-white" /> : null}
+            {/*
+              El fondo lo elige la persona usuaria, así que el color del check
+              se decide en tiempo de ejecución por contraste. Con `text-white`
+              fijo, sobre el amarillo o el verde de la paleta el ratio caía a
+              1.92:1 y el check era prácticamente invisible.
+            */}
+            {selected ? (
+              <Check
+                className="h-3.5 w-3.5"
+                style={{ color: readableInkOn(color) }}
+              />
+            ) : null}
           </button>
         );
       })}
