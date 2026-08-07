@@ -133,6 +133,11 @@ export function formatDateShort(date: Date): string {
   return format(date, "d MMM yyyy", { locale: es });
 }
 
+/** Sin año — para tablas dentro de contenedores estrechos. */
+export function formatDateCompact(date: Date): string {
+  return format(date, "d MMM", { locale: es });
+}
+
 export function formatMonthYear(date: Date): string {
   return format(date, "MMMM yyyy", { locale: es });
 }

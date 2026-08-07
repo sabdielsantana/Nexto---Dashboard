@@ -15,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatDateShort, fromDateKey } from "@/lib/dates";
+import { formatDateCompact, formatDateShort, fromDateKey } from "@/lib/dates";
 import { formatMoney, toMoney } from "@/lib/money";
 import type { AccountOption } from "@/lib/queries/accounts";
 import type { CategoryOption } from "@/lib/queries/categories";
@@ -28,6 +28,12 @@ interface TransactionListProps {
   categories: CategoryOption[];
   /** Oculta las acciones de edición (p.ej. dentro del calendario). */
   readOnly?: boolean;
+  /**
+   * Oculta la columna de fecha. Para contextos donde todas las filas son del
+   * mismo día — el panel del calendario — donde repetirla no aporta y en una
+   * tarjeta angosta le roba ancho a la categoría.
+   */
+  hideDate?: boolean;
   emptyDescription?: string;
 }
 
@@ -36,6 +42,7 @@ export function TransactionList({
   accounts,
   categories,
   readOnly = false,
+  hideDate = false,
   emptyDescription,
 }: TransactionListProps) {
   if (transactions.length === 0) {
@@ -52,17 +59,34 @@ export function TransactionList({
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Fecha</TableHead>
-          <TableHead>Categoría</TableHead>
-          <TableHead className="hidden sm:table-cell">Cuenta</TableHead>
-          <TableHead className="hidden md:table-cell">Nota</TableHead>
-          <TableHead className="text-right">Monto</TableHead>
-          {!readOnly ? <TableHead className="w-20" /> : null}
-        </TableRow>
-      </TableHeader>
+    /*
+     * `@container` mide el ancho de ESTA tarjeta, no el del viewport. Es lo que
+     * arregla el desbordamiento: la misma tabla vive en la página completa y en
+     * tarjetas de ~22rem, y con breakpoints de viewport se pintaban todas las
+     * columnas también en las estrechas, empujando el monto fuera de vista.
+     *
+     * Ojo: los cortes de container no son los del viewport. Aquí @md = 28rem y
+     * @2xl = 42rem, medidos contra la tarjeta.
+     */
+    <div className="@container [&_td]:px-2 [&_th]:px-2 @md:[&_td]:px-3 @md:[&_th]:px-3">
+      <Table>
+        {/*
+          En tarjetas compactas la cabecera se oculta: la palabra "Categoría"
+          fija un ancho mínimo de 95px cuando la celda solo necesita ~52, y ese
+          exceso es lo que empujaba el monto fuera. A ese tamaño la lista se lee
+          sola (fecha · categoría · monto).
+        */}
+        <TableHeader className="hidden @md:table-header-group">
+          <TableRow>
+            {!hideDate ? <TableHead>Fecha</TableHead> : null}
+            <TableHead>Categoría</TableHead>
+            <TableHead className="hidden @md:table-cell">Cuenta</TableHead>
+            <TableHead className="hidden @2xl:table-cell">Nota</TableHead>
+            {/* El monto nunca se oculta: es el dato que se viene a leer. */}
+            <TableHead className="text-right">Monto</TableHead>
+            {!readOnly ? <TableHead className="w-16" /> : null}
+          </TableRow>
+        </TableHeader>
       <TableBody>
         {transactions.map((transaction) => {
           const amount = toMoney(transaction.amount);
@@ -70,12 +94,27 @@ export function TransactionList({
 
           return (
             <TableRow key={transaction.id}>
-              <TableCell className="whitespace-nowrap text-muted-foreground">
-                {formatDateShort(fromDateKey(transaction.date))}
-              </TableCell>
+              {/* Sin año cuando la tarjeta es angosta: libera ~30px para la
+                  categoría sin perder el dato. */}
+              {!hideDate ? (
+                <TableCell className="whitespace-nowrap text-muted-foreground">
+                  <span className="@sm:hidden">
+                    {formatDateCompact(fromDateKey(transaction.date))}
+                  </span>
+                  <span className="hidden @sm:inline">
+                    {formatDateShort(fromDateKey(transaction.date))}
+                  </span>
+                </TableCell>
+              ) : null}
 
-              <TableCell>
-                <div className="flex items-center gap-2">
+              {/*
+                `w-full max-w-0` convierte a categoría en la columna elástica:
+                absorbe el espacio sobrante y es la única que se recorta. Sin
+                esto, `table-layout: auto` le da su ancho de contenido mínimo y
+                empuja el monto fuera del contenedor.
+              */}
+              <TableCell className="w-full max-w-0">
+                <div className="flex min-w-0 items-center gap-2">
                   <span
                     className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-sm"
                     style={{
@@ -84,7 +123,7 @@ export function TransactionList({
                   >
                     {transaction.categoryEmoji ?? "•"}
                   </span>
-                  <span className="truncate">
+                  <span className="min-w-0 truncate">
                     {transaction.categoryName ?? (
                       <span className="text-muted-foreground">Sin categoría</span>
                     )}
@@ -98,17 +137,17 @@ export function TransactionList({
                 </div>
               </TableCell>
 
-              <TableCell className="hidden truncate text-muted-foreground sm:table-cell">
+              <TableCell className="hidden truncate text-muted-foreground @md:table-cell">
                 {transaction.accountName}
               </TableCell>
 
-              <TableCell className="hidden max-w-[16rem] md:table-cell">
+              <TableCell className="hidden max-w-[16rem] @2xl:table-cell">
                 <span className="line-clamp-1 text-muted-foreground">
                   {transaction.note ?? "—"}
                 </span>
               </TableCell>
 
-              <TableCell className="text-right">
+              <TableCell className="whitespace-nowrap text-right">
                 <span
                   className={cn(
                     "tabular font-semibold",
@@ -148,9 +187,10 @@ export function TransactionList({
               ) : null}
             </TableRow>
           );
-        })}
-      </TableBody>
-    </Table>
+          })}
+        </TableBody>
+      </Table>
+    </div>
   );
 }
 

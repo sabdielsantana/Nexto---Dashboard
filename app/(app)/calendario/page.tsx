@@ -48,7 +48,7 @@ export default async function CalendarPage({
         description="Balance neto de cada día. Haz clic en un día para ver sus movimientos."
       />
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
         <CalendarView month={month} days={days} selectedDay={selectedDay} />
 
         <Card className="xl:sticky xl:top-20 xl:h-fit">
@@ -81,6 +81,7 @@ export default async function CalendarPage({
                 transactions={dayTransactions}
                 accounts={accounts}
                 categories={categories}
+                hideDate
                 emptyDescription="Ese día no tuvo movimientos."
               />
             ) : (
