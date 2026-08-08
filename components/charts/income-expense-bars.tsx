@@ -21,8 +21,9 @@ import {
 } from "@/components/charts/chart-theme";
 import { EmptyState } from "@/components/ui/empty-state";
 import { type BucketKey, formatBucket } from "@/lib/dates";
-import { toMoney, toNumber } from "@/lib/money";
+import { ZERO, formatMoney, roundedDivide, toMoney, toNumber } from "@/lib/money";
 import type { IncomeVsExpenseBucket } from "@/lib/queries/analytics";
+import { cn } from "@/lib/utils";
 
 interface IncomeExpenseBarsProps {
   data: IncomeVsExpenseBucket[];
@@ -45,6 +46,27 @@ export function IncomeExpenseBars({
     [data, bucket],
   );
 
+  // Se acumula en centavos y solo al final se formatea — nada de floats.
+  const totales = useMemo(() => {
+    let ingresos = ZERO;
+    let gastos = ZERO;
+    let conGasto = 0;
+
+    for (const entry of data) {
+      ingresos += toMoney(entry.ingresos);
+      const g = toMoney(entry.gastos);
+      gastos += g;
+      if (g !== ZERO) conGasto += 1;
+    }
+
+    return {
+      ingresos,
+      gastos,
+      balance: ingresos - gastos,
+      mediaGasto: conGasto > 0 ? roundedDivide(gastos, BigInt(conGasto)) : ZERO,
+    };
+  }, [data]);
+
   if (rows.length === 0) {
     return (
       <EmptyState
@@ -63,7 +85,13 @@ export function IncomeExpenseBars({
   });
 
   return (
-    <div className="h-72">
+    <div className="@container space-y-4">
+      {/*
+       * Altura fluida con tope: crece un poco en tarjetas grandes pero no se
+       * desmadra. El ancho sobrante no se gasta en engordar las barras
+       * (maxBarSize las limita) sino en el resumen de abajo.
+       */}
+      <div className="h-64 @2xl:h-72 @4xl:h-80">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={rows} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
           <CartesianGrid
@@ -109,6 +137,53 @@ export function IncomeExpenseBars({
           />
         </BarChart>
       </ResponsiveContainer>
+      </div>
+
+      {/*
+        El espacio sobrante se convierte en dato: totales del periodo, media
+        diaria y el día de mayor gasto. Solo aparece cuando la tarjeta tiene
+        ancho para ello, así en columnas estrechas no compite con el gráfico.
+      */}
+      <dl className="hidden gap-4 border-t border-border pt-3 @2xl:grid @2xl:grid-cols-4">
+        <Resumen label="Ingresos" value={formatMoney(totales.ingresos, currency)} tone="positive" />
+        <Resumen label="Gastos" value={formatMoney(totales.gastos, currency)} tone="negative" />
+        <Resumen
+          label="Balance"
+          value={formatMoney(totales.balance, currency)}
+          tone={totales.balance < 0n ? "negative" : "positive"}
+        />
+        <Resumen
+          label="Media diaria de gasto"
+          value={formatMoney(totales.mediaGasto, currency)}
+          tone="muted"
+        />
+      </dl>
+    </div>
+  );
+}
+
+function Resumen({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: string;
+  tone: "positive" | "negative" | "muted";
+}) {
+  return (
+    <div className="min-w-0">
+      <dt className="truncate text-xs text-muted-foreground">{label}</dt>
+      <dd
+        className={cn(
+          "tabular text-sm font-semibold",
+          tone === "positive" && "text-positive",
+          tone === "negative" && "text-negative",
+          tone === "muted" && "text-foreground",
+        )}
+      >
+        {value}
+      </dd>
     </div>
   );
 }

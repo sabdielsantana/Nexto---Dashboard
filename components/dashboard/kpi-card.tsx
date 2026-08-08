@@ -50,7 +50,7 @@ export function KpiCard({
         : change < 0;
 
   return (
-    <Card>
+    <Card className="@container">
       <CardContent className="space-y-1.5 p-4">
         <div className="flex items-center justify-between gap-2">
           <p className="text-xs font-medium text-muted-foreground">{label}</p>
@@ -93,6 +93,20 @@ export function KpiCard({
             Sin datos del periodo anterior
           </p>
         )}
+
+        {/*
+          En tarjetas anchas se añade el valor absoluto del periodo anterior.
+          Antes el ancho sobrante quedaba vacío a la derecha del número; ahora
+          lo ocupa un dato en vez de estirar la tipografía.
+        */}
+        {previous !== undefined ? (
+          <p className="hidden border-t border-border pt-1.5 text-xs text-muted-foreground @[16rem]:block">
+            Periodo anterior:{" "}
+            <span className="tabular font-medium text-foreground">
+              {formatMoney(previous, currency)}
+            </span>
+          </p>
+        ) : null}
       </CardContent>
     </Card>
   );

@@ -1,10 +1,12 @@
 import Link from "next/link";
 
-import { ArrowRight, PiggyBank, Target, Wallet } from "lucide-react";
+import { Activity, ArrowRight, BarChart3, PiggyBank, Target, Wallet } from "lucide-react";
 
 import { AccountsSummary } from "@/components/dashboard/accounts-summary";
+import { DailyActivity } from "@/components/dashboard/daily-activity";
 import { GoalsSummary } from "@/components/dashboard/goals-summary";
 import { KpiGrid } from "@/components/dashboard/kpi-card";
+import { IncomeExpenseBars } from "@/components/charts/income-expense-bars";
 import { SpendingDonut } from "@/components/charts/spending-donut";
 import { TransactionList } from "@/components/transactions/transaction-list";
 import { Button } from "@/components/ui/button";
@@ -12,9 +14,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { BUDGET_PERIOD_LABELS } from "@/lib/constants";
-import { previousRangeForPeriod, rangeForPeriod } from "@/lib/dates";
+import { bucketForPeriod, previousRangeForPeriod, rangeForPeriod } from "@/lib/dates";
 import { getAccountsWithBalances, getAccountOptions } from "@/lib/queries/accounts";
-import { getBudgetUsage, getPeriodTotals, getSpendingByCategory } from "@/lib/queries/analytics";
+import {
+  getBudgetUsage,
+  getDailyNetBalance,
+  getIncomeVsExpense,
+  getPeriodTotals,
+  getSpendingByCategory,
+} from "@/lib/queries/analytics";
 import { budgetWindow } from "@/lib/queries/budgets";
 import { getCategoryOptions } from "@/lib/queries/categories";
 import { getGoals } from "@/lib/queries/goals";
@@ -39,6 +47,8 @@ export default async function DashboardPage() {
     budgetUsage,
     accountOptions,
     categories,
+    dailyBalance,
+    incomeVsExpense,
   ] = await Promise.all([
     getPeriodTotals(range),
     getPeriodTotals(previousRange),
@@ -49,6 +59,8 @@ export default async function DashboardPage() {
     getBudgetUsage("mensual", monthlyBudgetWindow),
     getAccountOptions(),
     getCategoryOptions(),
+    getDailyNetBalance(range),
+    getIncomeVsExpense(range, bucketForPeriod("mes")),
   ]);
 
   const isEmpty = accounts.length === 0;
@@ -85,7 +97,36 @@ export default async function DashboardPage() {
             periodLabel={BUDGET_PERIOD_LABELS.mensual}
           />
 
-          <div className="grid gap-4 lg:grid-cols-2">
+          <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,20rem)_minmax(0,1fr)]">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Activity className="h-4 w-4" />
+                  Actividad diaria
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <DailyActivity days={dailyBalance} />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <BarChart3 className="h-4 w-4" />
+                  Ingresos vs. gastos
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <IncomeExpenseBars
+                  data={incomeVsExpense}
+                  bucket={bucketForPeriod("mes")}
+                />
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid items-start gap-4 lg:grid-cols-2">
             <Card>
               <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-base">Gasto por categoría</CardTitle>

@@ -10,6 +10,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { paletteColor } from "@/lib/constants";
 import { ZERO, formatMoney, percentOf, toMoney, toNumber } from "@/lib/money";
 import type { CategorySpending } from "@/lib/queries/analytics";
+import { cn } from "@/lib/utils";
 
 /** Categorías mostradas antes de agrupar el resto en "Otras". */
 const MAX_SLICES = 8;
@@ -62,8 +63,15 @@ export function SpendingDonut({ data, currency = "DOP" }: SpendingDonutProps) {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="relative h-64">
+    /*
+     * En tarjetas anchas la leyenda se coloca al lado de la dona en vez de
+     * debajo, y la dona se topa a un tamaño legible. El espacio extra se gasta
+     * en mostrar más datos, no en agrandar el gráfico: una dona gigante no
+     * aporta información y descuadra el resto del panel.
+     */
+    <div className="@container">
+      <div className="grid items-center gap-5 @2xl:grid-cols-[minmax(0,15rem)_minmax(0,1fr)]">
+        <div className="relative mx-auto aspect-square w-full max-w-[15rem]">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
@@ -102,23 +110,33 @@ export function SpendingDonut({ data, currency = "DOP" }: SpendingDonutProps) {
         </div>
       </div>
 
-      <ul className="space-y-1.5">
-        {slices.map((slice) => (
-          <li key={slice.name} className="flex items-center gap-2 text-sm">
-            <span
-              className="h-2.5 w-2.5 shrink-0 rounded-full"
-              style={{ backgroundColor: slice.color }}
-            />
-            <span className="min-w-0 flex-1 truncate">{slice.name}</span>
-            <span className="tabular text-muted-foreground">
-              {percentOf(slice.amount, total).toFixed(1)}%
-            </span>
-            <span className="tabular w-28 text-right font-medium">
-              {formatMoney(slice.amount, currency)}
-            </span>
-          </li>
-        ))}
-      </ul>
+        {/*
+          Con muchas categorías y sitio de sobra, la leyenda pasa a dos
+          columnas en lugar de estirar cada fila a lo ancho.
+        */}
+        <ul
+          className={cn(
+            "space-y-1.5",
+            slices.length > 5 && "@4xl:grid @4xl:grid-cols-2 @4xl:gap-x-6 @4xl:space-y-0",
+          )}
+        >
+          {slices.map((slice) => (
+            <li key={slice.name} className="flex items-center gap-2 text-sm">
+              <span
+                className="h-2.5 w-2.5 shrink-0 rounded-full"
+                style={{ backgroundColor: slice.color }}
+              />
+              <span className="min-w-0 flex-1 truncate">{slice.name}</span>
+              <span className="tabular text-muted-foreground">
+                {percentOf(slice.amount, total).toFixed(1)}%
+              </span>
+              <span className="tabular w-28 text-right font-medium">
+                {formatMoney(slice.amount, currency)}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }

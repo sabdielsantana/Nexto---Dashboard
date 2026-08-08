@@ -20,8 +20,9 @@ import {
 } from "@/components/charts/chart-theme";
 import { EmptyState } from "@/components/ui/empty-state";
 import { type BucketKey, formatBucket } from "@/lib/dates";
-import { toMoney, toNumber } from "@/lib/money";
+import { ZERO, formatMoney, formatSigned, toMoney, toNumber } from "@/lib/money";
 import type { BalancePoint } from "@/lib/queries/analytics";
+import { cn } from "@/lib/utils";
 
 interface BalanceLineProps {
   data: BalancePoint[];
@@ -43,6 +44,15 @@ export function BalanceLine({
     [data, bucket],
   );
 
+  const stats = useMemo(() => {
+    const saldos = data.map((p) => toMoney(p.saldo));
+    const inicial = saldos[0] ?? ZERO;
+    const ultimo = saldos[saldos.length - 1] ?? ZERO;
+    let maximo = inicial;
+    for (const s of saldos) if (s > maximo) maximo = s;
+    return { inicial, final: ultimo, variacion: ultimo - inicial, maximo };
+  }, [data]);
+
   if (rows.length === 0) {
     return (
       <EmptyState
@@ -61,7 +71,9 @@ export function BalanceLine({
   });
 
   return (
-    <div className="h-72">
+    <div className="@container space-y-4">
+      {/* Altura fluida con tope, igual criterio que el resto de gráficos. */}
+      <div className="h-64 @2xl:h-72 @4xl:h-80">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={rows} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
           <defs>
@@ -111,6 +123,48 @@ export function BalanceLine({
           />
         </AreaChart>
       </ResponsiveContainer>
+      </div>
+
+      {/*
+        En tarjetas anchas el hueco se llena con los extremos del periodo en
+        vez de estirar la línea: saber de dónde a dónde fue el saldo vale más
+        que un trazo más largo.
+      */}
+      <dl className="hidden gap-4 border-t border-border pt-3 @2xl:grid @2xl:grid-cols-4">
+        <Extremo label="Saldo inicial" value={formatMoney(stats.inicial, currency)} />
+        <Extremo label="Saldo final" value={formatMoney(stats.final, currency)} />
+        <Extremo
+          label="Variación"
+          value={formatSigned(stats.variacion, currency)}
+          tone={stats.variacion < 0n ? "negative" : "positive"}
+        />
+        <Extremo label="Máximo" value={formatMoney(stats.maximo, currency)} />
+      </dl>
+    </div>
+  );
+}
+
+function Extremo({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: string;
+  tone?: "positive" | "negative";
+}) {
+  return (
+    <div className="min-w-0">
+      <dt className="truncate text-xs text-muted-foreground">{label}</dt>
+      <dd
+        className={cn(
+          "tabular text-sm font-semibold",
+          tone === "positive" && "text-positive",
+          tone === "negative" && "text-negative",
+        )}
+      >
+        {value}
+      </dd>
     </div>
   );
 }
