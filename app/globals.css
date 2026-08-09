@@ -224,3 +224,28 @@
   scrollbar-width: thin;
   scrollbar-color: hsl(var(--border)) transparent;
 }
+
+/*
+ * react-grid-layout: se importa su hoja base en el componente del panel. Aquí
+ * solo se re-tematiza lo que trae en colores fijos (placeholder rojo, tirador
+ * negro) para que encaje con el sistema oscuro. El resto de su CSS —
+ * transiciones, posicionado por transform— se deja tal cual.
+ */
+.react-grid-item.react-grid-placeholder {
+  background: hsl(var(--primary));
+  opacity: 0.18;
+  border-radius: var(--radius);
+}
+
+/* El tirador de resize solo tiene sentido en modo edición, cuando el item es
+ * arrastrable. Fuera de edición react-grid-layout no lo renderiza. */
+.react-grid-item > .react-resizable-handle::after {
+  border-color: hsl(var(--muted-foreground));
+  opacity: 0.7;
+}
+
+/* Mientras se arrastra, el widget flota por encima con una sombra sutil. */
+.react-grid-item.react-draggable-dragging {
+  cursor: grabbing;
+  box-shadow: 0 12px 32px -8px hsl(var(--background) / 0.8);
+}
