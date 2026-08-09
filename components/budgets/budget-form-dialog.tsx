@@ -101,7 +101,7 @@ export function BudgetFormDialog({
         </DialogHeader>
 
         {categories.length === 0 ? (
-          <p className="rounded-md border border-warning/30 bg-warning/10 p-3 text-sm text-warning">
+          <p className="rounded-md border border-warning/30 bg-warning/10 p-3 text-sm text-warning-fg">
             Crea al menos una categoría antes de definir presupuestos.
           </p>
         ) : (

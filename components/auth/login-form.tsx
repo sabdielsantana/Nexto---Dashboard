@@ -71,14 +71,14 @@ export function LoginForm() {
       </div>
 
       {state.error ? (
-        <p className="flex items-start gap-2 rounded-md border border-negative/30 bg-negative/10 p-3 text-sm text-negative">
+        <p className="flex items-start gap-2 rounded-md border border-negative/30 bg-negative/10 p-3 text-sm text-negative-fg">
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
           {state.error}
         </p>
       ) : null}
 
       {state.message ? (
-        <p className="flex items-start gap-2 rounded-md border border-positive/30 bg-positive/10 p-3 text-sm text-positive">
+        <p className="flex items-start gap-2 rounded-md border border-positive/30 bg-positive/10 p-3 text-sm text-positive-fg">
           <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
           {state.message}
         </p>

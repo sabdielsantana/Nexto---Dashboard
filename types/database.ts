@@ -28,6 +28,15 @@ export type TransactionType = "ingreso" | "gasto";
 
 export type BudgetPeriod = "semanal" | "mensual" | "anual";
 
+/** Ambientes del glow de fondo (enum `glow_color` en 0003). */
+export type GlowColor =
+  | "purpura"
+  | "azul"
+  | "verde"
+  | "naranja"
+  | "rosa"
+  | "ninguno";
+
 export interface Database {
   public: {
     Tables: {
@@ -166,6 +175,30 @@ export interface Database {
         };
         Relationships: [];
       };
+      user_preferences: {
+        Row: {
+          user_id: string;
+          glow: GlowColor;
+          layout_config: Json | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          glow?: GlowColor;
+          layout_config?: Json | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          glow?: GlowColor;
+          layout_config?: Json | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       budgets: {
         Row: {
           id: string;
@@ -265,6 +298,7 @@ export interface Database {
     };
     Enums: {
       account_type: AccountType;
+      glow_color: GlowColor;
       transaction_type: TransactionType;
       budget_period: BudgetPeriod;
     };
@@ -291,4 +325,5 @@ export type Category = Tables<"categories">;
 export type Transaction = Tables<"transactions">;
 export type Goal = Tables<"goals">;
 export type Budget = Tables<"budgets">;
+export type UserPreferences = Tables<"user_preferences">;
 export type AccountBalance = Views<"account_balances">;

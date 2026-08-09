@@ -107,7 +107,7 @@ export function HeatmapCalendar({
                 <span
                   className={cn(
                     "tabular text-[0.6rem] font-semibold leading-none sm:text-[0.65rem]",
-                    neto < ZERO ? "text-negative" : "text-positive",
+                    neto < ZERO ? "text-negative-fg" : "text-positive-fg",
                   )}
                 >
                   {formatCompact(neto, currency)}

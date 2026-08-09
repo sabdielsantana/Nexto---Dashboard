@@ -53,6 +53,19 @@
   /* Tinta para rellenos claros — ver --on-bright. */
   --color-on-bright: hsl(var(--on-bright));
 
+  /*
+   * Variantes para TEXTO de los colores semánticos.
+   *
+   * Un color que funciona como relleno no sirve necesariamente como texto: en
+   * el tema claro, --positive sobre tarjeta blanca daba 2.89:1 y --warning
+   * 3.18:1, por debajo de AA. Estas variantes se oscurecen solo en claro; en
+   * oscuro coinciden con el token base, que ahí ya pasa de sobra.
+   */
+  --color-positive-fg: hsl(var(--positive-fg));
+  --color-negative-fg: hsl(var(--negative-fg));
+  --color-warning-fg: hsl(var(--warning-fg));
+  --color-info-fg: hsl(var(--info-fg));
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -93,6 +106,12 @@
   --warning: 25 95% 48%;
   --info: 217 91% 55%;
   --accent-alt: 271 81% 56%;
+
+  /* Texto: más oscuros que el relleno para llegar a 4.5:1 sobre blanco. */
+  --positive-fg: 142 71% 31%;
+  --negative-fg: 0 72% 45%;
+  --warning-fg: 25 95% 36%;
+  --info-fg: 217 91% 47%;
 
   /*
    * Tinta sobre rellenos claros y saturados (verde y naranja).
@@ -143,6 +162,12 @@
   --warning: 27 96% 56%;
   --info: 213 94% 62%;
   --accent-alt: 271 91% 68%;
+
+  /* Sobre fondo oscuro los tokens base ya superan AA como texto. */
+  --positive-fg: 142 71% 48%;
+  --negative-fg: 0 84% 62%;
+  --warning-fg: 27 96% 56%;
+  --info-fg: 213 94% 62%;
 }
 
 @layer base {
@@ -167,6 +192,32 @@
   .tabular {
     font-variant-numeric: tabular-nums;
   }
+
+  /*
+   * Jerarquía tipográfica.
+   *
+   * Los titulares llevan tracking negativo — a tamaño grande el espaciado por
+   * defecto se ve suelto — y todas las cifras van tabulares para que no bailen
+   * al actualizarse. Es puramente métrico: no cambia ningún color, así que no
+   * afecta al contraste.
+   */
+  h1,
+  h2 {
+    letter-spacing: -0.022em;
+  }
+
+  h3 {
+    letter-spacing: -0.014em;
+  }
+}
+
+@utility section-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: hsl(var(--muted-foreground));
 }
 
 @utility scrollbar-thin {

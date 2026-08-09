@@ -69,7 +69,7 @@ export function AccountsSummary({
         <p
           className={cn(
             "tabular text-3xl font-bold",
-            total < ZERO ? "text-negative" : "text-foreground",
+            total < ZERO ? "text-negative-fg" : "text-foreground",
           )}
         >
           {formatMoney(total)}

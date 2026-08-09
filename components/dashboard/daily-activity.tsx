@@ -164,13 +164,13 @@ export function DailyActivity({
           <div className="grid grid-cols-2 gap-3 border-t border-border pt-3">
             <div>
               <p className="text-xs text-muted-foreground">Mejor día</p>
-              <p className="tabular text-sm font-semibold text-positive">
+              <p className="tabular text-sm font-semibold text-positive-fg">
                 {formatMoney(toMoney(mejor.neto), currency)}
               </p>
             </div>
             <div>
               <p className="text-xs text-muted-foreground">Peor día</p>
-              <p className="tabular text-sm font-semibold text-negative">
+              <p className="tabular text-sm font-semibold text-negative-fg">
                 {formatMoney(toMoney(peor.neto), currency)}
               </p>
             </div>

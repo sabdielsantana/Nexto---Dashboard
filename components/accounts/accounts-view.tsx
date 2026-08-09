@@ -120,7 +120,7 @@ function AccountCard({ account }: { account: AccountWithBalance }) {
         <p
           className={cn(
             "tabular text-2xl font-bold",
-            negativo ? "text-negative" : "text-positive",
+            negativo ? "text-negative-fg" : "text-positive-fg",
           )}
         >
           {formatMoney(saldo, account.currency)}

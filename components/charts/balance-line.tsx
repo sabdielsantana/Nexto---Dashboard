@@ -159,8 +159,8 @@ function Extremo({
       <dd
         className={cn(
           "tabular text-sm font-semibold",
-          tone === "positive" && "text-positive",
-          tone === "negative" && "text-negative",
+          tone === "positive" && "text-positive-fg",
+          tone === "negative" && "text-negative-fg",
         )}
       >
         {value}

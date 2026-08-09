@@ -117,10 +117,18 @@ export function IncomeExpenseBars({
               name === "ingresos" ? "Ingresos" : "Gastos",
             ]}
           />
+          {/*
+            Recharts colorea la etiqueta con el color de la serie, y el verde
+            de ingresos sobre tarjeta clara se queda en 2.9:1. Se devuelve un
+            span con color de texto propio: la muestra conserva el color de la
+            serie, el texto pasa a foreground.
+          */}
           <Legend
-            formatter={(value: string) =>
-              value === "ingresos" ? "Ingresos" : "Gastos"
-            }
+            formatter={(value: string) => (
+              <span className="text-foreground">
+                {value === "ingresos" ? "Ingresos" : "Gastos"}
+              </span>
+            )}
             wrapperStyle={{ fontSize: "0.8rem" }}
           />
           <Bar
@@ -177,8 +185,8 @@ function Resumen({
       <dd
         className={cn(
           "tabular text-sm font-semibold",
-          tone === "positive" && "text-positive",
-          tone === "negative" && "text-negative",
+          tone === "positive" && "text-positive-fg",
+          tone === "negative" && "text-negative-fg",
           tone === "muted" && "text-foreground",
         )}
       >

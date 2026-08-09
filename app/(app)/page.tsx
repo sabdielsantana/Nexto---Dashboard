@@ -99,11 +99,23 @@ export default async function DashboardPage() {
 
           <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,20rem)_minmax(0,1fr)]">
             <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <Activity className="h-4 w-4" />
-                  Actividad diaria
+              <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="flex min-w-0 items-center gap-2 text-base">
+                  <Activity className="h-4 w-4 shrink-0" />
+                  <span className="truncate">Actividad diaria</span>
                 </CardTitle>
+                {/* Solo icono: en una tarjeta de 20rem el texto partía el título. */}
+                <Button
+                  asChild
+                  variant="ghost"
+                  size="icon-sm"
+                  className="shrink-0"
+                  aria-label="Ver calendario"
+                >
+                  <Link href="/calendario">
+                    <ArrowRight />
+                  </Link>
+                </Button>
               </CardHeader>
               <CardContent>
                 <DailyActivity days={dailyBalance} />
@@ -111,11 +123,17 @@ export default async function DashboardPage() {
             </Card>
 
             <Card>
-              <CardHeader className="pb-2">
+              <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="flex items-center gap-2 text-base">
                   <BarChart3 className="h-4 w-4" />
                   Ingresos vs. gastos
                 </CardTitle>
+                <Button asChild variant="ghost" size="sm">
+                  <Link href="/analitica">
+                    Ver analítica
+                    <ArrowRight />
+                  </Link>
+                </Button>
               </CardHeader>
               <CardContent>
                 <IncomeExpenseBars

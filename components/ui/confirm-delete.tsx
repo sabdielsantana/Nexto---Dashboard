@@ -57,7 +57,7 @@ export function ConfirmDelete({
       <AlertDialogTrigger asChild>
         {trigger ?? (
           <Button variant="ghost" size="icon-sm" aria-label="Eliminar">
-            <Trash2 className="text-negative" />
+            <Trash2 className="text-negative-fg" />
           </Button>
         )}
       </AlertDialogTrigger>

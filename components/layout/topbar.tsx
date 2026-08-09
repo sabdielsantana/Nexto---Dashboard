@@ -7,7 +7,8 @@ import Link from "next/link";
 
 import { signOut } from "@/app/login/actions";
 import { NAV_ITEMS } from "@/components/layout/nav-items";
-import { SidebarBrand, SidebarNav } from "@/components/layout/sidebar";
+import { SidebarBrand, SidebarNav, SidebarWelcome } from "@/components/layout/sidebar";
+import { GlowPicker } from "@/components/layout/glow-picker";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,11 +27,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { usePathname } from "next/navigation";
 
+import type { GlowColor } from "@/types/database";
+
 interface TopbarProps {
   email: string;
+  name: string;
+  lastSession: string | null;
+  glow: GlowColor;
 }
 
-export function Topbar({ email }: TopbarProps) {
+export function Topbar({ email, name, lastSession, glow }: TopbarProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
 
@@ -52,11 +58,12 @@ export function Topbar({ email }: TopbarProps) {
         <DialogContent className="left-0 top-0 h-full max-w-[17rem] translate-x-0 translate-y-0 gap-0 rounded-none border-y-0 border-l-0 p-0">
           <DialogTitle className="sr-only">Navegación</DialogTitle>
           <SidebarBrand />
+          <SidebarWelcome name={name} lastSession={lastSession} />
           <SidebarNav onNavigate={() => setMenuOpen(false)} />
         </DialogContent>
       </Dialog>
 
-      <h1 className="truncate text-base font-semibold lg:text-lg">
+      <h1 className="truncate text-base font-semibold tracking-tight lg:text-lg">
         {current?.label ?? "Nexto"}
       </h1>
 
@@ -72,6 +79,8 @@ export function Topbar({ email }: TopbarProps) {
             <Plus />
           </Link>
         </Button>
+
+        <GlowPicker current={glow} />
 
         <ThemeToggle />
 
@@ -95,7 +104,7 @@ export function Topbar({ email }: TopbarProps) {
             <DropdownMenuSeparator />
             <form action={signOut}>
               <button type="submit" className="w-full">
-                <DropdownMenuItem className="text-negative focus:text-negative">
+                <DropdownMenuItem className="text-negative-fg focus:text-negative-fg">
                   <LogOut />
                   Cerrar sesión
                 </DropdownMenuItem>

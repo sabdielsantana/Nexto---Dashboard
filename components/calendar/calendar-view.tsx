@@ -125,7 +125,7 @@ function MonthTotal({
       <p
         className={cn(
           "tabular font-semibold",
-          tone === "positive" ? "text-positive" : "text-negative",
+          tone === "positive" ? "text-positive-fg" : "text-negative-fg",
         )}
       >
         {value}

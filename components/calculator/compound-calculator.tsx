@@ -378,10 +378,14 @@ export function CompoundCalculator() {
                     ]}
                     labelFormatter={(label: string) => `Año ${label}`}
                   />
+                  {/* Mismo motivo que en las barras: el color de serie no
+                      sirve como color de texto en tema claro. */}
                   <Legend
-                    formatter={(value: string) =>
-                      value === "aportado" ? "Capital aportado" : "Intereses"
-                    }
+                    formatter={(value: string) => (
+                      <span className="text-foreground">
+                        {value === "aportado" ? "Capital aportado" : "Intereses"}
+                      </span>
+                    )}
                     wrapperStyle={{ fontSize: "0.8rem" }}
                   />
                   <Area
@@ -434,10 +438,10 @@ export function CompoundCalculator() {
                     <TableCell className="tabular text-right text-muted-foreground">
                       {formatMoney(row.openingBalance)}
                     </TableCell>
-                    <TableCell className="tabular text-right text-info">
+                    <TableCell className="tabular text-right text-info-fg">
                       {formatMoney(row.contributed)}
                     </TableCell>
-                    <TableCell className="tabular text-right text-positive">
+                    <TableCell className="tabular text-right text-positive-fg">
                       {formatMoney(row.interest)}
                     </TableCell>
                     <TableCell className="tabular pr-5 text-right font-semibold">
@@ -489,8 +493,8 @@ function ResultTile({
         className={cn(
           "tabular text-xl font-bold",
           tone === "accent" && "text-accentAlt",
-          tone === "info" && "text-info",
-          tone === "positive" && "text-positive",
+          tone === "info" && "text-info-fg",
+          tone === "positive" && "text-positive-fg",
         )}
       >
         {value}

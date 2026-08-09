@@ -166,10 +166,10 @@ function ProjectionNote({
     <p
       className={cn(
         "rounded-md border px-2.5 py-2 text-xs",
-        projection.status === "atrasada" && "border-warning/30 bg-warning/10 text-warning",
-        projection.status === "vencida" && "border-negative/30 bg-negative/10 text-negative",
-        projection.status === "en_ritmo" && "border-info/30 bg-info/10 text-info",
-        projection.status === "completada" && "border-positive/30 bg-positive/10 text-positive",
+        projection.status === "atrasada" && "border-warning/30 bg-warning/10 text-warning-fg",
+        projection.status === "vencida" && "border-negative/30 bg-negative/10 text-negative-fg",
+        projection.status === "en_ritmo" && "border-info/30 bg-info/10 text-info-fg",
+        projection.status === "completada" && "border-positive/30 bg-positive/10 text-positive-fg",
         projection.status === "sin_ritmo" && "border-border bg-muted/40 text-muted-foreground",
       )}
       aria-live="polite"

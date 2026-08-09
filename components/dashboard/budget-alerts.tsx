@@ -46,7 +46,7 @@ export function BudgetAlerts({
     <Card className="border-warning/40">
       <CardHeader className="flex-row items-center justify-between space-y-0 pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
-          <AlertTriangle className="h-4 w-4 text-warning" />
+          <AlertTriangle className="h-4 w-4 text-warning-fg" />
           Presupuestos en alerta
           <span className="text-xs font-normal text-muted-foreground">
             ({periodLabel})

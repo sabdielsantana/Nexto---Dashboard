@@ -134,7 +134,7 @@ export function TransactionFormDialog({
         </DialogHeader>
 
         {noAccounts ? (
-          <p className="rounded-md border border-warning/30 bg-warning/10 p-3 text-sm text-warning">
+          <p className="rounded-md border border-warning/30 bg-warning/10 p-3 text-sm text-warning-fg">
             Necesitas crear al menos una cuenta antes de registrar transacciones.
           </p>
         ) : (
@@ -147,7 +147,7 @@ export function TransactionFormDialog({
                 className={cn(
                   "rounded-md border px-3 py-2.5 text-sm font-medium transition-colors",
                   type === "ingreso"
-                    ? "border-positive bg-positive/15 text-positive"
+                    ? "border-positive bg-positive/15 text-positive-fg"
                     : "border-border text-muted-foreground hover:bg-accent",
                 )}
               >
@@ -159,7 +159,7 @@ export function TransactionFormDialog({
                 className={cn(
                   "rounded-md border px-3 py-2.5 text-sm font-medium transition-colors",
                   type === "gasto"
-                    ? "border-negative bg-negative/15 text-negative"
+                    ? "border-negative bg-negative/15 text-negative-fg"
                     : "border-border text-muted-foreground hover:bg-accent",
                 )}
               >

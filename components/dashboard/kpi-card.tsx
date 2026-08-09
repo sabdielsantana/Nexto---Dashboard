@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { ArrowDownRight, ArrowUpRight, Minus } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -28,6 +30,8 @@ interface KpiCardProps {
   goodDirection?: "up" | "down";
   currency?: string;
   tone?: "positive" | "negative" | "neutral";
+  /** Destino al pulsar la tarjeta. Sin él, la tarjeta no es interactiva. */
+  href?: string;
 }
 
 export function KpiCard({
@@ -38,6 +42,7 @@ export function KpiCard({
   goodDirection = "up",
   currency = "DOP",
   tone = "neutral",
+  href,
 }: KpiCardProps) {
   const change =
     previous !== undefined ? percentChange(value, previous) : null;
@@ -49,8 +54,14 @@ export function KpiCard({
         ? change > 0
         : change < 0;
 
-  return (
-    <Card className="@container">
+  const card = (
+    <Card
+      className={cn(
+        "@container h-full",
+        href &&
+          "transition-colors hover:border-primary/40 hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+      )}
+    >
       <CardContent className="space-y-1.5 p-4">
         <div className="flex items-center justify-between gap-2">
           <p className="text-xs font-medium text-muted-foreground">{label}</p>
@@ -60,8 +71,8 @@ export function KpiCard({
         <p
           className={cn(
             "tabular text-xl font-bold lg:text-2xl",
-            tone === "positive" && "text-positive",
-            tone === "negative" && "text-negative",
+            tone === "positive" && "text-positive-fg",
+            tone === "negative" && "text-negative-fg",
           )}
         >
           {formatMoney(value, currency)}
@@ -72,8 +83,8 @@ export function KpiCard({
             className={cn(
               "flex items-center gap-1 text-xs font-medium",
               isGood === null && "text-muted-foreground",
-              isGood === true && "text-positive",
-              isGood === false && "text-negative",
+              isGood === true && "text-positive-fg",
+              isGood === false && "text-negative-fg",
             )}
           >
             {change === 0 ? (
@@ -110,6 +121,19 @@ export function KpiCard({
       </CardContent>
     </Card>
   );
+
+  /*
+   * La tarjeta entera navega a su detalle. Se envuelve en un <a> en vez de
+   * superponer una capa invisible: no hay contenido interactivo dentro de un
+   * KPI, así que no se anidan controles y el foco por teclado funciona solo.
+   */
+  return href ? (
+    <Link href={href} aria-label={`${label}: ver detalle`} className="block">
+      {card}
+    </Link>
+  ) : (
+    card
+  );
 }
 
 /** Trío de KPIs: ingresos, gastos y balance del periodo. */
@@ -139,6 +163,7 @@ export function KpiGrid({
         goodDirection="up"
         tone="positive"
         currency={currency}
+        href="/transacciones?tipo=ingreso"
       />
       <KpiCard
         label="Gastos"
@@ -147,6 +172,7 @@ export function KpiGrid({
         goodDirection="down"
         tone="negative"
         currency={currency}
+        href="/transacciones?tipo=gasto"
       />
       <KpiCard
         label="Balance del periodo"
@@ -155,6 +181,7 @@ export function KpiGrid({
         goodDirection="up"
         tone={balance < 0n ? "negative" : "positive"}
         currency={currency}
+        href="/transacciones"
       />
     </div>
   );

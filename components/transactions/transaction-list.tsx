@@ -130,7 +130,7 @@ export function TransactionList({
                   </span>
                   {transaction.isRecurring ? (
                     <Repeat
-                      className="h-3.5 w-3.5 shrink-0 text-info"
+                      className="h-3.5 w-3.5 shrink-0 text-info-fg"
                       aria-label="Recurrente"
                     />
                   ) : null}
@@ -151,7 +151,7 @@ export function TransactionList({
                 <span
                   className={cn(
                     "tabular font-semibold",
-                    isIncome ? "text-positive" : "text-negative",
+                    isIncome ? "text-positive-fg" : "text-negative-fg",
                   )}
                 >
                   {isIncome ? "+" : "−"}
@@ -241,7 +241,7 @@ function Totals({
       <p
         className={cn(
           "tabular text-lg font-bold",
-          tone === "positive" ? "text-positive" : "text-negative",
+          tone === "positive" ? "text-positive-fg" : "text-negative-fg",
         )}
       >
         {value}
