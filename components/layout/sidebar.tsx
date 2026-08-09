@@ -17,8 +17,18 @@ export function SidebarNav({ onNavigate }: SidebarNavProps) {
   return (
     <nav className="flex flex-1 flex-col gap-5 overflow-y-auto px-3 pb-4 scrollbar-thin">
       {NAV_SECTIONS.map((section) => (
-        <div key={section.label} className="space-y-1">
-          <p className="section-label px-3 pb-1">{section.label}</p>
+        <div
+          key={section.label ?? "top-level"}
+          className={cn(
+            "space-y-1",
+            // Los ítems sin grupo se separan con una línea para que se lean
+            // como nivel superior y no como cola del grupo anterior.
+            section.label === null && "border-t border-border pt-4",
+          )}
+        >
+          {section.label ? (
+            <p className="section-label px-3 pb-1">{section.label}</p>
+          ) : null}
 
           {section.items.map((item) => {
             const active =

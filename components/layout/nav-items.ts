@@ -18,16 +18,20 @@ export interface NavItem {
 }
 
 export interface NavSection {
-  /** Se muestra en versalitas sobre el grupo. */
-  label: string;
+  /**
+   * Se muestra en versalitas sobre el grupo. `null` para ítems de nivel
+   * superior, que se pintan sin encabezado.
+   */
+  label: string | null;
   items: readonly NavItem[];
 }
 
 /**
  * Navegación agrupada por secciones.
  *
- * El calendario va en ACTIVIDAD: el mockup no lo incluye en su barra, pero la
- * ruta existe y funciona, así que se conserva en vez de dejarla huérfana.
+ * El calendario es un ítem de nivel superior, sin grupo: es una vista propia
+ * del mismo rango de datos que el resto, no un apartado de gestión, y en el
+ * dashboard tiene su propio widget que enlaza aquí.
  */
 export const NAV_SECTIONS: readonly NavSection[] = [
   {
@@ -51,8 +55,11 @@ export const NAV_SECTIONS: readonly NavSection[] = [
     items: [
       { href: "/transacciones", label: "Transacciones", icon: Receipt },
       { href: "/categorias", label: "Categorías", icon: Tags },
-      { href: "/calendario", label: "Calendario", icon: CalendarDays },
     ],
+  },
+  {
+    label: null,
+    items: [{ href: "/calendario", label: "Calendario", icon: CalendarDays }],
   },
 ];
 

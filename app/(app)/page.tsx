@@ -1,8 +1,17 @@
 import Link from "next/link";
 
-import { Activity, ArrowRight, BarChart3, PiggyBank, Target, Wallet } from "lucide-react";
+import {
+  Activity,
+  ArrowRight,
+  BarChart3,
+  CalendarDays,
+  PiggyBank,
+  Target,
+  Wallet,
+} from "lucide-react";
 
 import { AccountsSummary } from "@/components/dashboard/accounts-summary";
+import { CalendarPreview } from "@/components/dashboard/calendar-preview";
 import { DailyActivity } from "@/components/dashboard/daily-activity";
 import { GoalsSummary } from "@/components/dashboard/goals-summary";
 import { KpiGrid } from "@/components/dashboard/kpi-card";
@@ -14,7 +23,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { BUDGET_PERIOD_LABELS } from "@/lib/constants";
-import { bucketForPeriod, previousRangeForPeriod, rangeForPeriod } from "@/lib/dates";
+import {
+  bucketForPeriod,
+  lastSevenDays,
+  lastSevenDaysRange,
+  previousRangeForPeriod,
+  rangeForPeriod,
+} from "@/lib/dates";
 import { getAccountsWithBalances, getAccountOptions } from "@/lib/queries/accounts";
 import {
   getBudgetUsage,
@@ -49,6 +64,7 @@ export default async function DashboardPage() {
     categories,
     dailyBalance,
     incomeVsExpense,
+    weekBalance,
   ] = await Promise.all([
     getPeriodTotals(range),
     getPeriodTotals(previousRange),
@@ -61,6 +77,7 @@ export default async function DashboardPage() {
     getCategoryOptions(),
     getDailyNetBalance(range),
     getIncomeVsExpense(range, bucketForPeriod("mes")),
+    getDailyNetBalance(lastSevenDaysRange(now)),
   ]);
 
   const isEmpty = accounts.length === 0;
@@ -143,6 +160,33 @@ export default async function DashboardPage() {
               </CardContent>
             </Card>
           </div>
+
+          {/*
+            Preview del calendario: tarjeta entera clickeable, igual que los
+            KPIs. No hay controles dentro, así que se envuelve en un enlace en
+            vez de superponer una capa.
+          */}
+          <Link
+            href="/calendario"
+            aria-label="Calendario: ver el mes completo"
+            className="block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          >
+            <Card className="h-full transition-colors hover:border-primary/40 hover:bg-accent/40">
+              <CardHeader className="flex-row items-center justify-between space-y-0 pb-3">
+                <CardTitle className="flex min-w-0 items-center gap-2 text-base">
+                  <CalendarDays className="h-4 w-4 shrink-0" />
+                  <span className="truncate">Calendario</span>
+                </CardTitle>
+                <span className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
+                  Últimos 7 días
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </span>
+              </CardHeader>
+              <CardContent>
+                <CalendarPreview days={lastSevenDays(now)} balances={weekBalance} />
+              </CardContent>
+            </Card>
+          </Link>
 
           <div className="grid items-start gap-4 lg:grid-cols-2">
             <Card>

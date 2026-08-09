@@ -109,6 +109,16 @@ export function bucketForPeriod(period: PeriodKey): BucketKey {
   }
 }
 
+/** Los 7 días que terminan en `today`, del más antiguo al más reciente. */
+export function lastSevenDays(today: Date): Date[] {
+  return Array.from({ length: 7 }, (_, i) => addDays(today, -(6 - i)));
+}
+
+/** Rango que cubre esos 7 días, para pedir el agregado a la DB. */
+export function lastSevenDaysRange(today: Date): DateRange {
+  return { start: toDateKey(addDays(today, -6)), end: toDateKey(today) };
+}
+
 /** Rango del mes visible en el calendario, alineado a semanas completas. */
 export function calendarGridRange(month: Date): DateRange {
   return {
