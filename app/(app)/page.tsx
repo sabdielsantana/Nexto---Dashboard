@@ -46,7 +46,8 @@ import { budgetWindow } from "@/lib/queries/budgets";
 import { getCategoryOptions } from "@/lib/queries/categories";
 import { getGoals } from "@/lib/queries/goals";
 import { getRecentTransactions } from "@/lib/queries/transactions";
-import { BudgetAlerts, hasBudgetAlerts } from "@/components/dashboard/budget-alerts";
+import { BudgetAlerts } from "@/components/dashboard/budget-alerts";
+import { hasBudgetAlerts } from "@/lib/budget-alerts";
 
 export const metadata = { title: "Dashboard — Nexto" };
 

@@ -8,24 +8,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { BUDGET_WARNING_THRESHOLD } from "@/lib/budget-alerts";
 import { formatMoney, percentOf, subtract, toMoney } from "@/lib/money";
 import type { BudgetUsage } from "@/lib/queries/analytics";
 import { cn } from "@/lib/utils";
-
-const WARNING_THRESHOLD = 80;
-
-/**
- * Predicado con la misma regla que el componente: hay algo que mostrar cuando
- * algún presupuesto llega al umbral de alerta. La página lo usa para decidir si
- * monta el widget en el grid (y así no reservar un hueco vacío).
- */
-export function hasBudgetAlerts(usage: BudgetUsage[]): boolean {
-  return usage.some((entry) => {
-    const limit = toMoney(entry.limitAmount);
-    const spent = toMoney(entry.gastado);
-    return percentOf(spent, limit) >= WARNING_THRESHOLD;
-  });
-}
 
 /**
  * Solo aparece cuando hay presupuestos en riesgo o excedidos: en el dashboard
@@ -50,7 +36,7 @@ export function BudgetAlerts({
         exceeded: spent > limit,
       };
     })
-    .filter((item) => item.percent >= WARNING_THRESHOLD)
+    .filter((item) => item.percent >= BUDGET_WARNING_THRESHOLD)
     .sort((a, b) => b.percent - a.percent);
 
   if (alerts.length === 0) return null;
