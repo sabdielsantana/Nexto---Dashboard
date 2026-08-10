@@ -7,7 +7,15 @@ import "react-grid-layout/css/styles.css";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { Check, GripVertical, LayoutGrid, RotateCcw } from "lucide-react";
+import {
+  Check,
+  EyeOff,
+  GripVertical,
+  LayoutGrid,
+  Maximize2,
+  MoreVertical,
+  RotateCcw,
+} from "lucide-react";
 import {
   Responsive,
   WidthProvider,
@@ -16,6 +24,12 @@ import {
 } from "react-grid-layout";
 
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
@@ -42,7 +56,7 @@ interface WidgetSpec {
 // Orden y tamaños por defecto. Coincide con el orden en el que la página monta
 // los widgets; el usuario puede reordenarlos arrastrando en modo edición.
 const WIDGETS: readonly WidgetSpec[] = [
-  { id: "kpi", h: 3, lg: 12, md: 10, sm: 6 },
+  { id: "kpi", h: 4, lg: 12, md: 10, sm: 6 },
   { id: "patrimonio", h: 4, lg: 12, md: 10, sm: 6 },
   { id: "budget-alerts", h: 4, lg: 12, md: 10, sm: 6 },
   { id: "daily-activity", h: 5, lg: 4, md: 4, sm: 6 },
@@ -60,7 +74,11 @@ const BREAKPOINT_KEYS = ["lg", "md", "sm", "xs", "xxs"] as const;
 const ROW_HEIGHT = 48;
 const MARGIN: [number, number] = [16, 16];
 
-const STORAGE_KEY = "nexto:dashboard-layout:v1";
+// v2: el alto por defecto del widget KPI cambió con el rediseño (4ª tarjeta y
+// tipografía grande); subir la versión descarta layouts guardados que dejarían
+// la última KPI recortada.
+const STORAGE_KEY = "nexto:dashboard-layout:v2";
+const HIDDEN_KEY = "nexto:dashboard-hidden:v2";
 
 /**
  * Rellena una fila de izquierda a derecha: cuando un widget no cabe en las
@@ -107,8 +125,8 @@ const DEFAULT_LAYOUTS: Layouts = {
 /**
  * Cruza la base con lo guardado en el navegador y con los widgets realmente
  * presentes. Así un layout guardado no reserva hueco para un widget que hoy no
- * se muestra (p.ej. las alertas de presupuesto cuando no hay ninguna), y un
- * widget nuevo cae en su posición por defecto en vez de quedar sin sitio.
+ * se muestra (condicional u ocultado), y un widget nuevo cae en su posición por
+ * defecto en vez de quedar sin sitio.
  */
 function reconcile(
   saved: Partial<Record<string, Layout[]>> | null,
@@ -130,6 +148,18 @@ function reconcile(
   return out;
 }
 
+/** Devuelve un id a su tamaño por defecto (w/h) en todos los breakpoints. */
+function resetItemSize(layouts: Layouts, id: string): Layouts {
+  const out: Layouts = {};
+  for (const bp of BREAKPOINT_KEYS) {
+    const def = (DEFAULT_LAYOUTS[bp] ?? []).find((i) => i.i === id);
+    out[bp] = (layouts[bp] ?? []).map((item) =>
+      item.i === id && def ? { ...item, w: def.w, h: def.h } : item,
+    );
+  }
+  return out;
+}
+
 function readSaved(): Partial<Record<string, Layout[]>> | null {
   if (typeof window === "undefined") return null;
   try {
@@ -144,86 +174,198 @@ function readSaved(): Partial<Record<string, Layout[]>> | null {
   }
 }
 
-function persist(layouts: Layouts): void {
-  if (typeof window === "undefined") return;
+function readHidden(): string[] {
+  if (typeof window === "undefined") return [];
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(layouts));
+    const raw = window.localStorage.getItem(HIDDEN_KEY);
+    if (!raw) return [];
+    const parsed: unknown = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.filter((x) => typeof x === "string") : [];
   } catch {
-    // Cuota llena o almacenamiento deshabilitado: no es crítico, el panel
-    // sigue funcionando con el layout en memoria.
+    return [];
   }
 }
 
-export function DashboardGrid({ widgets }: { widgets: DashboardWidget[] }) {
-  const present = useMemo(
-    () => new Set(widgets.map((w) => w.id)),
-    [widgets],
+function persist(key: string, value: unknown): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // Cuota llena o almacenamiento deshabilitado: no es crítico, el panel
+    // sigue funcionando con el estado en memoria.
+  }
+}
+
+function removeKey(key: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.removeItem(key);
+  } catch {
+    // ignorar
+  }
+}
+
+/** "Actualizado hace X min" a partir de los minutos transcurridos. */
+function formatElapsed(minutes: number): string {
+  if (minutes <= 0) return "Actualizado ahora";
+  if (minutes === 1) return "Actualizado hace 1 min";
+  if (minutes < 60) return `Actualizado hace ${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  return hours === 1 ? "Actualizado hace 1 h" : `Actualizado hace ${hours} h`;
+}
+
+export function DashboardGrid({
+  widgets,
+  lastUpdated,
+}: {
+  widgets: DashboardWidget[];
+  /** Momento (ms epoch) del fetch de datos en el servidor, para el indicador. */
+  lastUpdated: number;
+}) {
+  const [hidden, setHidden] = useState<Set<string>>(() => new Set());
+
+  const visibleWidgets = useMemo(
+    () => widgets.filter((w) => !hidden.has(w.id)),
+    [widgets, hidden],
   );
 
   const [layouts, setLayouts] = useState<Layouts>(() =>
-    reconcile(null, present),
+    reconcile(null, new Set(widgets.map((w) => w.id))),
   );
   const [editing, setEditing] = useState(false);
+  const [dirty, setDirty] = useState(false);
   const [mounted, setMounted] = useState(false);
   // Ignora los onLayoutChange que dispara react-grid-layout al montar y al
   // compactar por primera vez: solo persistimos cambios hechos por el usuario.
   const hydrated = useRef(false);
 
+  // Minutos transcurridos desde el último fetch; se refresca cada minuto (#7).
+  const [elapsedMin, setElapsedMin] = useState(0);
+  useEffect(() => {
+    const tick = () =>
+      setElapsedMin(Math.max(0, Math.floor((Date.now() - lastUpdated) / 60000)));
+    tick();
+    const id = window.setInterval(tick, 60000);
+    return () => window.clearInterval(id);
+  }, [lastUpdated]);
+
   // La hidratación del layout guardado vive en un efecto para no leer
   // localStorage durante el render (evita desajustes servidor/cliente).
   useEffect(() => {
-    setLayouts(reconcile(readSaved(), present));
+    const savedHidden = readHidden();
+    const savedLayout = readSaved();
+    const hiddenSet = new Set(savedHidden.filter((id) => id !== undefined));
+    const presentIds = new Set(
+      widgets.filter((w) => !hiddenSet.has(w.id)).map((w) => w.id),
+    );
+    setHidden(hiddenSet);
+    setLayouts(reconcile(savedLayout, presentIds));
+    setDirty(savedLayout !== null || savedHidden.length > 0);
     setMounted(true);
     hydrated.current = true;
-  }, [present]);
+    // Solo al montar: la reconciliación posterior por cambios de `hidden`/drag
+    // se gestiona en sus propios handlers.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const handleLayoutChange = useCallback(
-    (_current: Layout[], all: Layouts) => {
-      setLayouts(all);
-      if (hydrated.current) persist(all);
-    },
-    [],
+  const handleLayoutChange = useCallback((_current: Layout[], all: Layouts) => {
+    setLayouts(all);
+    if (hydrated.current) {
+      persist(STORAGE_KEY, all);
+      setDirty(true);
+    }
+  }, []);
+
+  const hideWidget = useCallback((id: string) => {
+    setHidden((prev) => {
+      const next = new Set(prev);
+      next.add(id);
+      persist(HIDDEN_KEY, [...next]);
+      return next;
+    });
+    setDirty(true);
+  }, []);
+
+  const resetSize = useCallback((id: string) => {
+    setLayouts((prev) => {
+      const next = resetItemSize(prev, id);
+      persist(STORAGE_KEY, next);
+      return next;
+    });
+    setDirty(true);
+  }, []);
+
+  const resetAll = useCallback(() => {
+    const allIds = new Set(widgets.map((w) => w.id));
+    setHidden(new Set());
+    setLayouts(reconcile(null, allIds));
+    removeKey(STORAGE_KEY);
+    removeKey(HIDDEN_KEY);
+    setDirty(false);
+  }, [widgets]);
+
+  const indicator = (
+    <span className="flex items-center gap-2 text-xs text-muted-foreground">
+      <span className="relative flex h-2 w-2">
+        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-positive opacity-60" />
+        <span className="relative inline-flex h-2 w-2 rounded-full bg-positive" />
+      </span>
+      {formatElapsed(elapsedMin)}
+    </span>
   );
 
-  const reset = useCallback(() => {
-    const defaults = reconcile(null, present);
-    setLayouts(defaults);
-    if (typeof window !== "undefined") {
-      try {
-        window.localStorage.removeItem(STORAGE_KEY);
-      } catch {
-        // ignorar
-      }
-    }
-  }, [present]);
-
   const toolbar = (
-    <div className="mb-3 flex items-center justify-end gap-2">
-      {editing ? (
-        <Button variant="ghost" size="sm" onClick={reset}>
+    <div className="mb-3 flex flex-wrap items-center justify-end gap-2">
+      {indicator}
+      <div className="ml-auto flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={resetAll}
+          disabled={!dirty}
+        >
           <RotateCcw />
-          Restablecer
+          Restablecer diseño
         </Button>
-      ) : null}
-      <Button
-        variant={editing ? "default" : "outline"}
-        size="sm"
-        onClick={() => setEditing((v) => !v)}
-        aria-pressed={editing}
-      >
-        {editing ? (
-          <>
-            <Check />
-            Listo
-          </>
-        ) : (
-          <>
-            <LayoutGrid />
-            Editar diseño
-          </>
-        )}
-      </Button>
+        <Button
+          variant={editing ? "default" : "outline"}
+          size="sm"
+          onClick={() => setEditing((v) => !v)}
+          aria-pressed={editing}
+        >
+          {editing ? <Check /> : <LayoutGrid />}
+          {editing ? "Listo" : "Editar widgets"}
+        </Button>
+      </div>
     </div>
+  );
+
+  /** Menú ⋮ de un widget: ocultar o restablecer su tamaño (#5). */
+  const widgetMenu = (id: string) => (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          aria-label="Opciones del widget"
+          className={cn(
+            "absolute right-2 top-2 z-20 flex h-7 w-7 items-center justify-center rounded-md border border-border bg-card/90 text-muted-foreground opacity-0 shadow-sm backdrop-blur transition-opacity hover:text-foreground focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring group-hover:opacity-100 data-[state=open]:opacity-100",
+            editing && "opacity-100",
+          )}
+        >
+          <MoreVertical className="h-4 w-4" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-48">
+        <DropdownMenuItem onSelect={() => hideWidget(id)}>
+          <EyeOff />
+          Ocultar widget
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => resetSize(id)}>
+          <Maximize2 />
+          Restablecer tamaño
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 
   // Antes de montar (y en SSR) se pinta una versión apilada con los mismos
@@ -234,7 +376,7 @@ export function DashboardGrid({ widgets }: { widgets: DashboardWidget[] }) {
       <div>
         {toolbar}
         <div className="space-y-4">
-          {widgets.map((w) => (
+          {visibleWidgets.map((w) => (
             <div key={w.id}>{w.node}</div>
           ))}
         </div>
@@ -260,19 +402,21 @@ export function DashboardGrid({ widgets }: { widgets: DashboardWidget[] }) {
         onLayoutChange={handleLayoutChange}
         useCSSTransforms
       >
-        {widgets.map((w) => (
+        {visibleWidgets.map((w) => (
           <div
             key={w.id}
             className={cn(
-              "h-full overflow-hidden rounded-lg",
+              "group h-full overflow-hidden rounded-lg",
               editing &&
                 "ring-2 ring-primary/40 ring-offset-2 ring-offset-background",
             )}
           >
+            {widgetMenu(w.id)}
+
             {editing ? (
               <button
                 type="button"
-                className="widget-drag-handle absolute right-2 top-2 z-20 flex h-7 w-7 cursor-grab touch-none items-center justify-center rounded-md border border-border bg-card/90 text-muted-foreground shadow-sm backdrop-blur active:cursor-grabbing"
+                className="widget-drag-handle absolute right-11 top-2 z-20 flex h-7 w-7 cursor-grab touch-none items-center justify-center rounded-md border border-border bg-card/90 text-muted-foreground shadow-sm backdrop-blur active:cursor-grabbing"
                 aria-label="Mover widget"
               >
                 <GripVertical className="h-4 w-4" />
@@ -282,7 +426,8 @@ export function DashboardGrid({ widgets }: { widgets: DashboardWidget[] }) {
             {/*
               En modo edición el contenido no debe recibir clics (los KPIs y el
               calendario son enlaces): así arrastrar/soltar no navega. El tirador
-              queda fuera de este contenedor, por eso sigue siendo interactivo.
+              y el menú quedan fuera de este contenedor, por eso siguen siendo
+              interactivos.
             */}
             <div
               className={cn(

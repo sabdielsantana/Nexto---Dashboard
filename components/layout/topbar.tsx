@@ -2,12 +2,17 @@
 
 import { useState } from "react";
 
-import { LogOut, Menu, Plus } from "lucide-react";
+import { LogOut, Menu, Plus, Search } from "lucide-react";
 import Link from "next/link";
 
 import { signOut } from "@/app/login/actions";
 import { NAV_ITEMS } from "@/components/layout/nav-items";
-import { SidebarBrand, SidebarNav, SidebarWelcome } from "@/components/layout/sidebar";
+import {
+  SidebarBrand,
+  SidebarNav,
+  SidebarUser,
+  SidebarWelcome,
+} from "@/components/layout/sidebar";
 import { GlowPicker } from "@/components/layout/glow-picker";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -55,19 +60,47 @@ export function Topbar({ email, name, lastSession, glow }: TopbarProps) {
             <Menu />
           </Button>
         </DialogTrigger>
-        <DialogContent className="left-0 top-0 h-full max-w-[17rem] translate-x-0 translate-y-0 gap-0 rounded-none border-y-0 border-l-0 p-0">
+        <DialogContent className="left-0 top-0 flex h-full max-w-[17rem] translate-x-0 translate-y-0 flex-col gap-0 rounded-none border-y-0 border-l-0 p-0">
           <DialogTitle className="sr-only">Navegación</DialogTitle>
           <SidebarBrand />
           <SidebarWelcome name={name} lastSession={lastSession} />
           <SidebarNav onNavigate={() => setMenuOpen(false)} />
+          <SidebarUser name={name} email={email} />
         </DialogContent>
       </Dialog>
 
-      <h1 className="truncate text-base font-semibold tracking-tight lg:text-lg">
-        {current?.label ?? "Nexto"}
-      </h1>
+      {/* Breadcrumb real: raíz "Inicio" + vista activa. En el dashboard la vista
+          se llama "Resumen"; en el resto, la etiqueta de la ruta activa. */}
+      <nav aria-label="Ruta" className="flex min-w-0 items-center gap-1.5 text-sm">
+        <Link
+          href="/"
+          className="text-muted-foreground transition-colors hover:text-foreground"
+        >
+          Inicio
+        </Link>
+        <span aria-hidden className="text-muted-foreground/50">
+          /
+        </span>
+        <span aria-current="page" className="truncate font-semibold text-foreground">
+          {pathname === "/" ? "Resumen" : current?.label ?? "—"}
+        </span>
+      </nav>
 
       <div className="ml-auto flex items-center gap-1.5">
+        {/* Búsqueda: por ahora solo visual (sin lógica de filtrado). */}
+        <div className="relative hidden md:block">
+          <Search
+            aria-hidden
+            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+          />
+          <input
+            type="search"
+            placeholder="Buscar..."
+            aria-label="Buscar"
+            className="h-9 w-[280px] rounded-md border border-border bg-muted/50 pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          />
+        </div>
+
         <Button asChild size="sm" className="hidden sm:inline-flex">
           <Link href="/transacciones?nueva=1">
             <Plus />

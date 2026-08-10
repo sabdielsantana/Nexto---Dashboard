@@ -47,7 +47,7 @@ export default async function AppLayout({
     <div className="relative flex min-h-screen bg-background">
       <GlowBackground color={prefs.glow} />
 
-      <Sidebar name={name} lastSession={lastSession} />
+      <Sidebar name={name} lastSession={lastSession} email={user.email ?? ""} />
 
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar

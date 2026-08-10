@@ -287,7 +287,7 @@ export default async function DashboardPage() {
           }
         />
       ) : (
-        <DashboardGrid widgets={widgets} />
+        <DashboardGrid widgets={widgets} lastUpdated={Date.now()} />
       )}
     </>
   );
